@@ -4,10 +4,9 @@ const moment = require('moment-timezone')
 moment.tz.setDefault('Asia/Jakarta').locale('id')
 const { downloader, cekResi, urlShortener, meme, translate, getLocationData, edukasi, igstalk, nulis } = require('../../lib')
 const { msgFilter, color, processTime, isUrl } = require('../../utils')
-const mentionList = require('../../utils/mention')
 const { uploadImages } = require('../../utils/fetcher')
 const sleep = ms => new Promise(res => setTimeout(res, ms))
-const { RemoveBgResult, removeBackgroundFromImageBase64 } = require('remove.bg')
+const { removeBackgroundFromImageBase64 } = require('remove.bg')
 const pg = require('pg')
 
 const database = new pg.Client({
@@ -157,8 +156,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
                           console.log(`Sticker Processed for ${processTime(t, moment())} Second`)
                       })
                   } else if ((isMedia || isQuotedImage) && args[0] === 'nobg') {
-                      if (!isPmWhitelist) return client.reply(from, bot.error.onlyPremi, id)
-                      if (isGroupMsg) return client.reply(from, bot.error.onlyPm, id)
+                      if (!isgPremiList) return client.reply(from, bot.error.onlyPremi, id)
                       try {
                           const encryptMedia = isQuotedImage ? quotedMsg : message
                           const _mimetype = isQuotedImage ? quotedMsg.mimetype : mimetype
@@ -200,7 +198,6 @@ module.exports = msgHandler = async (client = new Client(), message) => {
                       })
                   } else if ((isMedia || isQuotedImage) && args[0] === 'nobg') {
                       if (!isPmWhitelist) return client.reply(from, bot.error.onlyPremi, id)
-                      if (isGroupMsg) return client.reply(from, bot.error.onlyPm, id)
                       try {
                           const encryptMedia = isQuotedImage ? quotedMsg : message
                           const _mimetype = isQuotedImage ? quotedMsg.mimetype : mimetype
@@ -826,8 +823,8 @@ module.exports = msgHandler = async (client = new Client(), message) => {
               if (!isGroupAdmins) return client.reply(from, bot.error.notAdmin, id)
               if (!isBotGroupAdmins) return client.reply(from, bot.error.botNotAdmin, id)
               if (args.length !== 1) return client.reply(from, 'Untuk menggunakan fitur ini, kirim perintah *!add* 628xxxxx', id)
-              const id = args[0]
-              const orang = `${id}@c.us`
+              const uid = args[0]
+              const orang = `${uid}@c.us`
               if (groupAdmins.includes(orang)) return await client.sendText(from, 'Gagal, kamu tidak bisa mengeluarkan admin grup.')
               database.connect()
               const sql = 'INSERT INTO blacklist(id) VALUES($1) RETURNING *'
@@ -835,7 +832,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
               database.query(sql, value)
                 .then((res) => {
                   client.removeParticipant(groupId, orang)
-                  client.sendTextWithMentions(from, `@${id} telah di *gban*`)
+                  client.sendTextWithMentions(from, `@${uid} telah di *gban*`)
                   console.log(res)
                 }).catch((err) => {
                   console.log(err)
@@ -855,14 +852,14 @@ module.exports = msgHandler = async (client = new Client(), message) => {
               if (!isGroupMsg) return client.reply(from, 'Maaf, perintah ini hanya dapat dipakai didalam grup! [Group Only]', id)
               if (!isGroupAdmins) return client.reply(from, bot.error.notAdmin, id)
               if (!isBotGroupAdmins) return client.reply(from, bot.error.botNotAdmin, id)
-              const id = args[0]
-              const orang = `${id}@c.us`
+              const uid = args[0]
+              const orang = `${uid}@c.us`
               database.connect()
               const sql = 'DELETE FROM blacklist WHERE id = $1'
               const value = [`${orang}`]
               database.query(sql, value)
                 .then((res) => {
-                  client.sendTextWithMentions(from, `Berhasil mencabut *gban* @${id}`)
+                  client.sendTextWithMentions(from, `Berhasil mencabut *gban* @${uid}`)
                   console.log(res)
                 }).catch((err) => {
                   client.sendText(from, 'Telah terjadi error coba liat log')
