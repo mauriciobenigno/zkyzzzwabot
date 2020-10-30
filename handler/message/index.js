@@ -830,7 +830,9 @@ module.exports = msgHandler = async (client = new Client(), message) => {
               const orang = `${id}@c.us`
               if (groupAdmins.includes(orang)) return await client.sendText(from, 'Gagal, kamu tidak bisa mengeluarkan admin grup.')
               database.connect()
-              database.query(`INSERT INTO blacklist (id) VALUES ('${orang}')`)
+              const sql = 'INSERT INTO blacklist(id) VALUES($1) RETURNING *'
+              const value = [`${orang}`]
+              database.query(sql, value)
                 .then((res) => {
                   client.removeParticipant(groupId, orang)
                   client.sendTextWithMentions(from, `@${id} telah di *gban*`)
@@ -848,7 +850,7 @@ module.exports = msgHandler = async (client = new Client(), message) => {
               client.reply(from, bot.error.gbanGroup, id)
             }
             break
-        case 'ugban':
+        case 'ungban':
             if (isBotGroup) {
               if (!isGroupMsg) return client.reply(from, 'Maaf, perintah ini hanya dapat dipakai didalam grup! [Group Only]', id)
               if (!isGroupAdmins) return client.reply(from, bot.error.notAdmin, id)
@@ -856,7 +858,9 @@ module.exports = msgHandler = async (client = new Client(), message) => {
               const id = args[0]
               const orang = `${id}@c.us`
               database.connect()
-              database.query(`DELETE FROM blacklist WHERE id = '${orang}'`)
+              const sql = 'DELETE FROM blacklist WHERE id = $1'
+              const value = [`${orang}`]
+              database.query(sql, value)
                 .then((res) => {
                   client.sendTextWithMentions(from, `Berhasil mencabut *gban* @${id}`)
                   console.log(res)
