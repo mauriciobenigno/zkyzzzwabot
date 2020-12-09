@@ -18,7 +18,7 @@
       "required": true
     },
     "OWNER_PHONE": {
-      "description": "Enter your phone number.",
+      "description": "17789012490",
       "required": true
     }
   }
